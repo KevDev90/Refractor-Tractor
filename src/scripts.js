@@ -1,10 +1,11 @@
 import './css/base.scss';
 import './css/styles.scss';
+import $ from 'jquery';
 
-import userData from './data/users';
-import activityData from './data/activity';
-import sleepData from './data/sleep';
-import hydrationData from './data/hydration';
+// import userData from './data/users';
+// import activityData from './data/activity';
+// import sleepData from './data/sleep';
+// import hydrationData from './data/hydration';
 
 import UserRepository from './UserRepository';
 import User from './User';
@@ -13,29 +14,66 @@ import Hydration from './Hydration';
 import Sleep from './Sleep';
 
 
+let hydrationData = fetch('https://fe-apps.herokuapp.com/api/v1/fitlit/1908/hydration/hydrationData').then(function(response) {
+  return response.json()
+});
+let activityData = fetch('https://fe-apps.herokuapp.com/api/v1/fitlit/1908/activity/activityData').then(function(response) {
+  return response.json()
+});
+let sleepData = fetch('https://fe-apps.herokuapp.com/api/v1/fitlit/1908/sleep/sleepData').then(function(response) {
+  return response.json()
+});
+let userData = fetch('https://fe-apps.herokuapp.com/api/v1/fitlit/1908/users/userData').then(function(response) {
+  return response.json()
+});
+let combinedData = {
+  "userData": {},
+  "sleepData":{},
+  "hydrationData":{},
+  "activityData":{}
+};
+
+Promise.all([ userData, sleepData, hydrationData, activityData ]).then(function (values) {
+  console.log(values);
+  combinedData["userData"] = values[0].userData;
+  combinedData["sleepData"] = values[1].sleepData;
+  combinedData["hydrationData"] = values[2].hydrationData;
+  combinedData["activityData"] = values[3].activityData;
+  return combinedData;
+}).then((result) => {
+    doEverything(result);
+  });
+
+  function doEverything(result) {
+   console.log(result, 'result')
+}
+console.log(combinedData);
+
+
+
 
 let userRepository = new UserRepository();
 
-userData.forEach(user => {
-  user = new User(user);
-  userRepository.users.push(user)
-});
-
-activityData.forEach(activity => {
-  activity = new Activity(activity, userRepository);
-});
-
-hydrationData.forEach(hydration => {
-  hydration = new Hydration(hydration, userRepository);
-});
-
-sleepData.forEach(sleep => {
-  sleep = new Sleep(sleep, userRepository);
-});
+// userData.forEach(user => {
+//   user = new User(user);
+//   userRepository.users.push(user)
+// });
+//
+// activityData.forEach(activity => {
+//   activity = new Activity(activity, userRepository);
+// });
+//
+// hydrationData.forEach(hydration => {
+//   hydration = new Hydration(hydration, userRepository);
+// });
+//
+// sleepData.forEach(sleep => {
+//   sleep = new Sleep(sleep, userRepository);
+// });
 
 let user = userRepository.users[0];
 let todayDate = "2019/09/22";
-user.findFriendsNames(userRepository.users);
+// user.findFriendsNames(userRepository.users);
 
 let dailyOz = document.querySelectorAll('.daily-oz');
 let dropdownEmail = document.querySelector('#dropdown-email');
@@ -64,15 +102,15 @@ let sleepInfoQualityAverageAlltime = document.querySelector('#sleep-info-quality
 let sleepInfoQualityToday = document.querySelector('#sleep-info-quality-today');
 let sleepMainCard = document.querySelector('#sleep-main-card');
 let sleepUserHoursToday = document.querySelector('#sleep-user-hours-today');
-let sortedHydrationDataByDate = user.ouncesRecord.sort((a, b) => {
-  if (Object.keys(a)[0] > Object.keys(b)[0]) {
-    return -1;
-  }
-  if (Object.keys(a)[0] < Object.keys(b)[0]) {
-    return 1;
-  }
-  return 0;
-});
+// let sortedHydrationDataByDate = user.ouncesRecord.sort((a, b) => {
+//   if (Object.keys(a)[0] > Object.keys(b)[0]) {
+//     return -1;
+//   }
+//   if (Object.keys(a)[0] < Object.keys(b)[0]) {
+//     return 1;
+//   }
+//   return 0;
+// });
 let stairsCalendarCard = document.querySelector('#stairs-calendar-card');
 let stairsCalendarFlightsAverageWeekly = document.querySelector('#stairs-calendar-flights-average-weekly');
 let stairsCalendarStairsAverageWeekly = document.querySelector('#stairs-calendar-stairs-average-weekly');
@@ -104,7 +142,7 @@ let userInfoDropdown = document.querySelector('#user-info-dropdown');
 
 mainPage.addEventListener('click', showInfo);
 profileButton.addEventListener('click', showDropdown);
-stairsTrendingButton.addEventListener('click', updateTrendingStairsDays());
+stairsTrendingButton.addEventListener('click', updateTrendingStairsDays);
 stepsTrendingButton.addEventListener('click', updateTrendingStepDays());
 
 function flipCard(cardToHide, cardToShow) {
@@ -176,6 +214,7 @@ function showInfo() {
 function updateTrendingStairsDays() {
   user.findTrendingStairsDays();
   trendingStairsPhraseContainer.innerHTML = `<p class='trend-line'>${user.trendingStairsDays[0]}</p>`;
+  console.log(combinedData.userData[4]);
 }
 
 function updateTrendingStepDays() {
